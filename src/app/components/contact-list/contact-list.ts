@@ -1,22 +1,26 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { ContactRow } from '../contact-row/contact-row';
+import { ContactsService } from '../../servicios/contacts';
 
 @Component({
-  imports: [ContactRow],
   selector: 'app-contact-list',
   standalone: true,
-  styleUrl: './contact-list.css',
+  imports: [ContactRow],
   templateUrl: './contact-list.html',
 })
-export class ContactList {
-  contacts: Contact[] = [
-    { id: 1, name: 'María López',
-      email: 'maria@example.com' },
-    { id: 2, name: 'Carlos Ruiz',
-      email: 'carlos@example.com'},
-  ];
-}
+export class ContactList implements OnInit {
+  private contactsService = inject(ContactsService);
+  private changeDetector = inject(ChangeDetectorRef);
+  contacts: Contact[] = [];
+  cargando = true;
 
+  ngOnInit(): void {
+    this.contactsService.getContacts().subscribe({
+      next: (d) => { this.contacts = d; this.cargando = false; this.changeDetector.markForCheck(); },
+      error: () => { this.cargando = false; this.changeDetector.markForCheck(); }
+    });
+  }
+}
 export interface Contact {
     id: number;
     name: string;
